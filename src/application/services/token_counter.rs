@@ -1,33 +1,36 @@
-use tiktoken_rs::tokenizer::Tokenizer;
-use tiktoken_rs::{CoreBPE, get_bpe_from_model, get_bpe_from_tokenizer};
+use crate::domain::common::token::{TokenBudget, TokenCount};
 
-use crate::domain::common::token::TokenCount;
-
-pub struct TokenCounter {
-    bpe: CoreBPE,
+pub trait TokenCounterPort: Send + Sync {
+    fn count(&self, text: &str) -> TokenCount;
 }
 
-impl Default for TokenCounter {
-    fn default() -> Self {
-        let bpe = get_bpe_from_tokenizer(Tokenizer::Cl100kBase).unwrap();
-        Self { bpe }
-    }
+pub struct TokenCounterService<C: TokenCounterPort> {
+    counter: C,
 }
 
-impl TokenCounter {
-    pub fn new() -> Self {
-        Self::default()
+impl<C: TokenCounterPort> TokenCounterService<C> {
+    pub fn new(counter: C) -> Self {
+        Self { counter }
     }
 
     pub fn count(&self, text: &str) -> TokenCount {
-        let tokens = self.bpe.encode_ordinary(text);
-        TokenCount::new(tokens.len() as u32)
+        self.counter.count(text)
     }
 
-    pub fn count_with_model(&self, text: &str, model: &str) -> crate::error::Result<TokenCount> {
-        let bpe = get_bpe_from_model(model)
-            .map_err(|e| crate::error::Error::Parse(format!("Invalid model: {e}")))?;
-        let tokens = bpe.encode_ordinary(text);
-        Ok(TokenCount::new(tokens.len() as u32))
+    pub fn check_budget(
+        &self,
+        text: &str,
+        budget: TokenBudget,
+    ) -> crate::Result<TokenCount> {
+        let count = self.counter.count(text);
+
+        if count.exceeds(budget) {
+            Err(crate::Error::TokenBudget {
+                current: count.as_u32() as usize,
+                budget: budget.as_u32() as usize,
+            })
+        } else {
+            Ok(count)
+        }
     }
 }

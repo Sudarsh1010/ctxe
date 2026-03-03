@@ -1,2 +1,2 @@
-pub mod token_count;
-pub use token_count::{TokenCountCommand, TokenCountResult, handle_token_count};
+pub mod compress;
+pub use compress::{CompressCommand, handle_compress};

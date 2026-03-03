@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -13,13 +15,17 @@ impl TokenCount {
     pub fn new(count: u32) -> Self {
         Self(count)
     }
-
     pub fn as_u32(self) -> u32 {
         self.0
     }
-
     pub fn exceeds(self, budget: TokenBudget) -> bool {
         self.0 > budget.0
+    }
+}
+
+impl Display for TokenCount {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 
@@ -29,10 +35,9 @@ pub struct TokenBudget(u32);
 impl TokenBudget {
     pub fn new(budget: u32) -> Result<Self, BudgetError> {
         if budget == 0 {
-            Err(BudgetError::ZeroBudget)
-        } else {
-            Ok(Self(budget))
+            return Err(BudgetError::ZeroBudget);
         }
+        Ok(Self(budget))
     }
 
     pub fn as_u32(self) -> u32 {

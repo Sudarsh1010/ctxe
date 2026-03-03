@@ -33,4 +33,3 @@ impl From<crate::domain::common::token::BudgetError> for Error {
         Error::Config(err.to_string())
     }
 }
-
