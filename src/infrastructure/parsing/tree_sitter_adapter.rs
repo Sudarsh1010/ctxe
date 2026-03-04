@@ -120,8 +120,10 @@ impl TreeSitterParser {
         let name_node = node.child_by_field_name("name")?;
         let name = &code[name_node.byte_range()];
 
-        // Extract signature: from "fn" to end of parameteres/return type
-        let signature = &code[node.byte_range()];
+        let signature = match node.child_by_field_name("body") {
+            Some(body_node) => &code[node.start_byte()..body_node.start_byte()],
+            None => &code[node.byte_range()],
+        };
 
         let location = SourceSpan {
             start_byte: node.start_byte(),
