@@ -1,11 +1,11 @@
 use ctxe::{
-    domain::common::language::Language,
-    infrastructure::parsing::TreeSitterParser,
+    domain::code::service::parser::Parser, domain::common::language::Language,
+    infrastructure::parsing::tree_sitter_adapter::TreeSitterParser,
 };
 
 #[test]
 fn test_parse_rust_function() {
-    let mut parser = TreeSitterParser::new().unwrap();
+    let parser = TreeSitterParser::new().unwrap();
     let code = r#"
         pub fn hello(name: &str) -> String {
             format!("Hello, {}!", name)
@@ -21,7 +21,7 @@ fn test_parse_rust_function() {
 
 #[test]
 fn test_handles_malformed_code() {
-    let mut parser = TreeSitterParser::new().unwrap();
+    let parser = TreeSitterParser::new().unwrap();
     let code = "fn broken( {"; // Invalid syntax
 
     // Should not panic - may return empty or partial results
