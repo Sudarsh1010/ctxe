@@ -1,10 +1,14 @@
-use tiktoken_rs::{CoreBPE, get_bpe_from_tokenizer, tokenizer::Tokenizer};
+use itertools::intersperse;
+use tiktoken_rs::CoreBPE;
 
-use crate::domain::{
-    code::service::compressor::{
-        CompressionLevel, CompressionResult, Compressor,
+use crate::{
+    domain::{
+        code::service::compressor::{
+            CompressionLevel, CompressionResult, Compressor,
+        },
+        common::token::TokenBudget,
     },
-    common::token::TokenBudget,
+    infrastructure::token::shared::get_shared_tokenizer,
 };
 
 pub struct AstCompressor {
@@ -13,7 +17,7 @@ pub struct AstCompressor {
 
 impl AstCompressor {
     pub fn new() -> crate::Result<Self> {
-        let bpe = get_bpe_from_tokenizer(Tokenizer::Cl100kBase).unwrap();
+        let bpe = get_shared_tokenizer().clone();
         Ok(Self { bpe })
     }
 
@@ -32,26 +36,22 @@ impl Compressor for AstCompressor {
         budget: Option<TokenBudget>,
     ) -> crate::Result<CompressionResult> {
         let compressed = match level {
-            CompressionLevel::SignaturesOnly => symbols
-                .iter()
-                .map(|s| s.signature.clone())
-                .collect::<Vec<_>>()
-                .join("\n\n")
-                .to_string(),
+            CompressionLevel::SignaturesOnly => intersperse(
+                symbols.iter().map(|s| s.signature.as_str()),
+                "\n\n",
+            )
+            .collect::<String>(),
 
-            CompressionLevel::WithDocs => symbols
-                .iter()
-                .map(|s| {
-                    let mut out = String::new();
-                    if let Some(doc) = &s.doc {
-                        out.push_str(doc);
-                        out.push('\n');
-                    }
-                    out.push_str(&s.signature);
-                    out
-                })
-                .collect::<Vec<_>>()
-                .join("\n\n"),
+            CompressionLevel::WithDocs => intersperse(
+                symbols.iter().map(|s| {
+                    s.doc
+                        .as_ref()
+                        .map(|doc| format!("{doc}\n{}", s.signature))
+                        .unwrap_or_else(|| s.signature.clone())
+                }),
+                "\n\n".to_string(),
+            )
+            .collect::<String>(),
 
             CompressionLevel::RemoveComments => remove_comments(code),
             CompressionLevel::None => code.to_string(),
@@ -79,17 +79,22 @@ impl Compressor for AstCompressor {
     }
 }
 
+/// Removes line comments only.
+///
+/// **Limitations**: Does not handle block comments, comments in strings,
+/// or nested comments. For production use, consider using tree-sitter
+/// to properly identify comment nodes.
 fn remove_comments(code: &str) -> String {
-    // Very basic: remove // and /* */ comments
-    // For production, use tree-sitter to properly identify comment nodes
-    code.lines()
-        .map(|line| {
+    // Very basic: remove // comments
+    intersperse(
+        code.lines().map(|line| {
             if let Some(idx) = line.find("//") {
                 &line[..idx]
             } else {
                 line
             }
-        })
-        .collect::<Vec<_>>()
-        .join("\n")
+        }),
+        "\n",
+    )
+    .collect::<String>()
 }

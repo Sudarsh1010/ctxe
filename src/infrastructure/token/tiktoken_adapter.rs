@@ -1,7 +1,8 @@
-use tiktoken_rs::{CoreBPE, get_bpe_from_tokenizer, tokenizer::Tokenizer};
+use tiktoken_rs::CoreBPE;
 
 use crate::{
     application::services::TokenCounterPort, domain::common::token::TokenCount,
+    infrastructure::token::shared::get_shared_tokenizer,
 };
 
 pub struct TiktokenAdapter {
@@ -9,9 +10,9 @@ pub struct TiktokenAdapter {
 }
 
 impl TiktokenAdapter {
-    pub fn new() -> Self {
-        let bpe = get_bpe_from_tokenizer(Tokenizer::Cl100kBase).unwrap();
-        Self { bpe }
+    pub fn new() -> crate::Result<Self> {
+        let bpe = get_shared_tokenizer().clone();
+        Ok(Self { bpe })
     }
 }
 
