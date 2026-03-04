@@ -1,2 +1,4 @@
+pub mod heuristic_adapter;
 pub mod shared;
-pub mod tiktoken_adapter;
+
+pub use heuristic_adapter::HeuristicTokenCounter;

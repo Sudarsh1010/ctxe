@@ -1,5 +1,4 @@
 use itertools::intersperse;
-use tiktoken_rs::CoreBPE;
 
 use crate::{
     domain::{
@@ -8,22 +7,14 @@ use crate::{
         },
         common::token::TokenBudget,
     },
-    infrastructure::token::shared::get_shared_tokenizer,
+    infrastructure::token::shared::count_tokens,
 };
 
-pub struct AstCompressor {
-    bpe: CoreBPE,
-}
+pub struct AstCompressor;
 
 impl AstCompressor {
     pub fn new() -> crate::Result<Self> {
-        let bpe = get_shared_tokenizer().clone();
-        Ok(Self { bpe })
-    }
-
-    /// Count tokens using the configured tokenizer
-    fn count_tokens(&self, text: &str) -> u32 {
-        self.bpe.encode_ordinary(text).len() as u32
+        Ok(Self)
     }
 }
 
@@ -57,8 +48,8 @@ impl Compressor for AstCompressor {
             CompressionLevel::None => code.to_string(),
         };
 
-        let original_tokens = self.count_tokens(code);
-        let compressed_tokens = self.count_tokens(&compressed);
+        let original_tokens = count_tokens(code);
+        let compressed_tokens = count_tokens(&compressed);
 
         let result = CompressionResult::new(
             compressed,
@@ -79,13 +70,7 @@ impl Compressor for AstCompressor {
     }
 }
 
-/// Removes line comments only.
-///
-/// **Limitations**: Does not handle block comments, comments in strings,
-/// or nested comments. For production use, consider using tree-sitter
-/// to properly identify comment nodes.
 fn remove_comments(code: &str) -> String {
-    // Very basic: remove // comments
     intersperse(
         code.lines().map(|line| {
             if let Some(idx) = line.find("//") {

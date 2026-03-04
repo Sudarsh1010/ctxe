@@ -3,7 +3,7 @@
 //! This library provides core functionality for:
 //! - Code parsing (tree-sitter)
 //! - Context compression
-//! - Token counting
+//! - Token counting (heuristic-based)
 //! - Git-aware file selection
 //! - Semantic search (Phase 2)
 
@@ -22,7 +22,7 @@ use crate::{
     infrastructure::{
         compressor::ast_compressor::AstCompressor,
         parsing::tree_sitter_adapter::TreeSitterParser,
-        token::tiktoken_adapter::TiktokenAdapter,
+        token::heuristic_adapter::HeuristicTokenCounter,
     },
 };
 
@@ -31,12 +31,10 @@ use crate::{
 /// This is the **composition root** — the only place that knows about
 /// concrete infrastructure types. Everything else depends on traits.
 pub fn build_services() -> Result<AppComponent> {
-    // === Infrastructure Adapters (concrete implementations) ===
     let parser = TreeSitterParser::new()?;
-    let token_counter = TiktokenAdapter::new()?;
+    let token_counter = HeuristicTokenCounter::new()?;
     let compressor = AstCompressor::new()?;
 
-    // === Application Services (orchestration) ===
     let parser_service = ParserService::new(parser);
     let token_counter_service = TokenCounterService::new(token_counter);
     let compressor_service = CompressorService::new(compressor);
@@ -54,7 +52,7 @@ pub fn build_services() -> Result<AppComponent> {
 /// Entry points (CLI/MCP) use this to access functionality.
 pub struct AppComponent {
     parser_service: ParserService<TreeSitterParser>,
-    token_counter_service: TokenCounterService<TiktokenAdapter>,
+    token_counter_service: TokenCounterService<HeuristicTokenCounter>,
     compressor_service: CompressorService<AstCompressor>,
 }
 
@@ -67,7 +65,7 @@ impl AppComponent {
         F: FnOnce(
             &mut ParserService<TreeSitterParser>,
             &mut CompressorService<AstCompressor>,
-            &mut TokenCounterService<TiktokenAdapter>,
+            &mut TokenCounterService<HeuristicTokenCounter>,
         ) -> R,
     {
         f(
@@ -78,7 +76,4 @@ impl AppComponent {
     }
 }
 
-// ─────────────────────────────────────────────────────────────
-// Crate Metadata
-// ─────────────────────────────────────────────────────────────
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
