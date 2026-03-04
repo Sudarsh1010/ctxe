@@ -26,6 +26,9 @@ pub enum Error {
 
     #[error("Config error: {0}")]
     Config(String),
+
+    #[error("Poisoned lock")]
+    PoisonedLock,
 }
 
 impl From<crate::domain::common::token::BudgetError> for Error {

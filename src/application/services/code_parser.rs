@@ -13,7 +13,7 @@ impl<P: ParserTrait> ParserService<P> {
     }
 
     pub fn parse_symbols(
-        &mut self,
+        &self,
         code: &str,
         language: Language,
     ) -> crate::Result<Vec<Symbol>> {

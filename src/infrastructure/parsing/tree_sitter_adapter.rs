@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Mutex};
 
 use tree_sitter::{Node, Parser as TsParser, Tree};
 
@@ -11,7 +11,7 @@ use crate::domain::{
 };
 
 pub struct TreeSitterParser {
-    parser: TsParser,
+    parser: Mutex<TsParser>,
     languages: HashMap<Language, tree_sitter::Language>,
 }
 
@@ -32,11 +32,14 @@ impl TreeSitterParser {
         );
         languages.insert(Language::Python, tree_sitter_python::LANGUAGE.into());
 
-        Ok(Self { parser, languages })
+        Ok(Self {
+            parser: parser.into(),
+            languages,
+        })
     }
 
     pub fn parse_tree(
-        &mut self,
+        &self,
         code: &str,
         language: Language,
     ) -> crate::Result<Tree> {
@@ -44,12 +47,18 @@ impl TreeSitterParser {
             crate::Error::UnsupportedLanguage(language.as_str().to_string())
         })?;
 
-        self.parser.set_language(&lang).map_err(|e| {
+        let mut parser =
+            self.parser.lock().map_err(|_| crate::Error::PoisonedLock)?;
+
+        parser.set_language(lang).map_err(|e| {
             crate::Error::Parse(format!("Failed to set language: {e}"))
         })?;
 
-        self.parser.parse(code, None).ok_or_else(|| {
-            crate::Error::Parse("Failed to parse the code:".to_string())
+        parser.parse(code, None).ok_or_else(|| {
+            crate::Error::Parse(format!(
+                "Failed to parse {} code",
+                language.as_str()
+            ))
         })
     }
 
@@ -95,6 +104,8 @@ impl TreeSitterParser {
         }
 
         let mut cursor = node.walk();
+
+        // Recurse
         for child in node.children(&mut cursor) {
             self.walk_node(child, code, language, symbols);
         }
@@ -157,7 +168,7 @@ impl TreeSitterParser {
 
 impl ParserTrait for TreeSitterParser {
     fn parse_symbols(
-        &mut self,
+        &self,
         code: &str,
         language: Language,
     ) -> crate::Result<Vec<Symbol>> {
@@ -166,7 +177,7 @@ impl ParserTrait for TreeSitterParser {
     }
 
     fn extract_signature(
-        &mut self,
+        &self,
         _code: &str,
         symbol: &Symbol,
     ) -> crate::Result<String> {
@@ -176,3 +187,8 @@ impl ParserTrait for TreeSitterParser {
         Ok(symbol.signature.clone())
     }
 }
+
+// SAFETY: TreeSitterParser uses Mutex for interior mutability,
+// and all other fields are read-only after construction.
+unsafe impl Send for TreeSitterParser {}
+unsafe impl Sync for TreeSitterParser {}
