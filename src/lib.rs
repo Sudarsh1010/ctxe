@@ -33,7 +33,7 @@ use crate::{
 pub fn build_services() -> Result<AppComponent> {
     // === Infrastructure Adapters (concrete implementations) ===
     let parser = TreeSitterParser::new()?;
-    let token_counter = TiktokenAdapter::new();
+    let token_counter = TiktokenAdapter::new()?;
     let compressor = AstCompressor::new()?;
 
     // === Application Services (orchestration) ===
@@ -53,9 +53,29 @@ pub fn build_services() -> Result<AppComponent> {
 /// Returned by `build_services()` and passed to command handlers.
 /// Entry points (CLI/MCP) use this to access functionality.
 pub struct AppComponent {
-    pub parser_service: ParserService<TreeSitterParser>,
-    pub token_counter_service: TokenCounterService<TiktokenAdapter>,
-    pub compressor_service: CompressorService<AstCompressor>,
+    parser_service: ParserService<TreeSitterParser>,
+    token_counter_service: TokenCounterService<TiktokenAdapter>,
+    compressor_service: CompressorService<AstCompressor>,
+}
+
+impl AppComponent {
+    /// Provides mutable access to all services simultaneously.
+    ///
+    /// This pattern enables disjoint borrows while keeping fields private.
+    pub fn with_services<F, R>(&mut self, f: F) -> R
+    where
+        F: FnOnce(
+            &mut ParserService<TreeSitterParser>,
+            &mut CompressorService<AstCompressor>,
+            &mut TokenCounterService<TiktokenAdapter>,
+        ) -> R,
+    {
+        f(
+            &mut self.parser_service,
+            &mut self.compressor_service,
+            &mut self.token_counter_service,
+        )
+    }
 }
 
 // ─────────────────────────────────────────────────────────────
