@@ -13,6 +13,30 @@ pub struct CompressCommand {
     pub budget: Option<u32>,
 }
 
+impl CompressCommand {
+    pub fn new(
+        code: String,
+        language: Language,
+        level: CompressionLevel,
+        budget: Option<u32>,
+    ) -> crate::Result<Self> {
+        if code.is_empty() {
+            return Err(crate::Error::Parse("Code cannot be empty".into()));
+        }
+
+        if let Some(b) = budget {
+            TokenBudget::new(b)?; // Validate budget
+        }
+
+        Ok(Self {
+            code,
+            language,
+            level,
+            budget,
+        })
+    }
+}
+
 pub fn handle_compress<P, C>(
     cmd: CompressCommand,
     parser: &mut ParserService<P>,
@@ -23,7 +47,7 @@ where
     C: CompressTrait,
 {
     let symbols = parser.parse_symbols(&cmd.code, cmd.language)?;
-    let budget = cmd.budget.map(|b| TokenBudget::new(b)).transpose()?;
+    let budget = cmd.budget.map(TokenBudget::new).transpose()?;
 
     let compression_result =
         compressor.compress(&cmd.code, &symbols, cmd.level, budget)?;

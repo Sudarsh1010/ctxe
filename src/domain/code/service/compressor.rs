@@ -27,6 +27,9 @@ pub trait Compressor: Send + Sync {
     ) -> crate::Result<CompressionResult>;
 }
 
+/// Result of a compression operation.
+///
+/// This is a data transfer object - all fields are public for ergonomics.
 #[derive(Debug, Clone)]
 pub struct CompressionResult {
     pub compressed: String,

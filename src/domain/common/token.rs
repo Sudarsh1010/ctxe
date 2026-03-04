@@ -13,7 +13,7 @@ pub struct TokenCount(u32);
 
 impl TokenCount {
     pub fn new(count: u32) -> Self {
-        Self(count)
+        Self(count) // No validation - allows 0
     }
     pub fn as_u32(self) -> u32 {
         self.0
