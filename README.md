@@ -5,11 +5,10 @@ Dynamic context engineering for AI coding agents.
 ## Features
 
 - 🚀 AST-based compression (60-70% token reduction)
-- 🔍 Semantic code search with local embeddings
+- 🔍 Semantic code search with embeddings
 - 📊 Token counting and budget enforcement
 - 🔗 Git-aware context selection
 - 🖥️ MCP server for Claude Code integration
-- 📝 LSP server for IDE integration
 
 ## Installation
 
