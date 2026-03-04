@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct Settings {
     /// Default compression level
     #[serde(default)]
@@ -12,15 +12,6 @@ pub struct Settings {
     /// Logging verbosity
     #[serde(default)]
     pub verbose: bool,
-}
-
-impl Default for Settings {
-    fn default() -> Self {
-        Self {
-            default_compression: CompressionConfig::default(),
-            verbose: false,
-        }
-    }
 }
 
 impl Settings {

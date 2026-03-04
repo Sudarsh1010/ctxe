@@ -5,6 +5,7 @@ use ctxe::{
     VERSION,
     application::commands::{CompressCommand, handle_compress},
     build_services,
+    config::settings::Settings,
     domain::{
         code::service::compressor::CompressionLevel, common::language::Language,
     },
@@ -72,6 +73,14 @@ fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
     let mut services = build_services()?;
 
+    let settings = Settings::load()
+        .inspect_err(|e| {
+            eprintln!("Warning: Failed to load config: {e}, using defaults")
+        })
+        .unwrap_or_default();
+
+    let verbose = cli.verbose || settings.verbose;
+
     match cli.command {
         Commands::Compress {
             files,
@@ -82,21 +91,16 @@ fn main() -> anyhow::Result<()> {
                 let code = std::fs::read_to_string(&file)?;
                 let language = Language::from_extension(&file);
 
-                let cmd = CompressCommand {
-                    code,
-                    language,
-                    level: level.into(),
-                    budget,
-                };
+                let cmd =
+                    CompressCommand::new(code, language, level.into(), budget)?;
 
-                let result = handle_compress(
-                    cmd,
-                    &mut services.parser_service,
-                    &services.compressor_service,
-                )?;
+                let result =
+                    services.with_services(|parser, compressor, _| {
+                        handle_compress(cmd, parser, compressor)
+                    })?;
 
                 println!("{}", result.compressed);
-                if cli.verbose {
+                if verbose {
                     eprintln!(
                         "Compressed: {} → {} tokens ({:.1}% reduction)",
                         result.original_tokens,
@@ -121,7 +125,9 @@ fn main() -> anyhow::Result<()> {
                     .join("\n")
             };
 
-            let count = services.token_counter_service.count(&text);
+            let count = services.with_services(|_, _, token_counter| {
+                token_counter.count(&text)
+            });
 
             if let Some(budget) = budget {
                 let budget_obj =
