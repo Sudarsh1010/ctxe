@@ -8,6 +8,10 @@ license = "MIT"
 name = "ctxe"
 path = "./src/lib.rs"
 
+[[bin]]
+name = "ctxe-mcp"
+path = "./src/bin/ctxe-mcp/main.rs"
+
 [dependencies]
 tokio = { version = "1.50.0", features = ["full"] }
 serde = { version = "1.0.149", features = ["derive"] }
