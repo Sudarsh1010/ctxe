@@ -1,6 +1,6 @@
 /// # Example
 /// ```rust
-/// use crate::database::RowExt;
+/// use crate::utils::RowExt;
 /// let line: usize = row.get_usize(0)?;
 /// ```
 use rusqlite::{Error, Row, RowIndex};
