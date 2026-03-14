@@ -12,7 +12,7 @@ pub use symbol_kind::*;
 pub struct File {
     pub id: i64,
     pub path: String,
-    pub file_hash: String,
+    pub merkle_hash: String,
     pub language: Language,
 }
 

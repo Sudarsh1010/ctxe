@@ -2,7 +2,7 @@ pub const V0: &str = r#"
     CREATE TABLE files (
         id INTEGER PRIMARY KEY,
         path TEXT NOT NULL UNIQUE,
-        file_hash TEXT NOT NULL,
+        merkle_hash TEXT NOT NULL,
         language TEXT NOT NULL,
         last_indexed_at INTEGER NOT NULL
     );

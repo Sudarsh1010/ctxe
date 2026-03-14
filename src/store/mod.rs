@@ -11,8 +11,8 @@ use sqlite_vec::sqlite3_vec_init;
 use std::{mem::transmute, path::Path, sync::Arc};
 use tokio::{sync::Mutex, task::spawn_blocking};
 
-struct Store {
-    inner: Arc<Mutex<Connection>>,
+pub struct Store {
+    pub inner: Arc<Mutex<Connection>>,
 }
 
 impl Store {
