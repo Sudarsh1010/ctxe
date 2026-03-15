@@ -19,6 +19,7 @@ impl Store {
     pub async fn new(project_path: &Path) -> Result<Self, DbError> {
         let path = path::get_db_path(project_path)?;
         let connection: Connection = spawn_blocking(move || {
+            #[allow(clippy::missing_transmute_annotations)]
             unsafe {
                 sqlite3_auto_extension(Some(transmute(
                     sqlite3_vec_init as *const (),
