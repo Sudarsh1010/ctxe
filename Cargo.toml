@@ -51,3 +51,6 @@ tree-sitter-typescript = "0.23.2"
 tree-sitter-verilog = "1.0.3"
 ignore = "0.4"
 rayon = "1.10"
+
+[dev-dependencies]
+tempfile = "3.12"
