@@ -1,4 +1,4 @@
-use crate::models::SymbolKind;
+use ctxe_core::SymbolKind;
 use std::path::Path;
 use tree_sitter::Language;
 

@@ -1,18 +1,14 @@
-[package]
-name = "ctxe"
+[workspace]
+resolver = "2"
+members = ["crates/*"]
+
+[workspace.package]
 version = "0.1.0"
 edition = "2024"
 license = "MIT"
 
-[lib]
-name = "ctxe"
-path = "./src/lib.rs"
-
-[[bin]]
-name = "ctxe-mcp"
-path = "./src/bin/ctxe-mcp/main.rs"
-
-[dependencies]
+[workspace.dependencies]
+# Core deps
 rmcp = { version = "1.2.0", features = ["server", "transport-io"] }
 tokio = { version = "1.50.0", features = ["full"] }
 serde = { version = "1.0.149", features = ["derive"] }
@@ -50,8 +46,17 @@ tree-sitter-rust = "0.24.0"
 tree-sitter-scala = "0.25.0"
 tree-sitter-typescript = "0.23.2"
 tree-sitter-verilog = "1.0.3"
+
+# File walking and parallelism
 ignore = "0.4"
 rayon = "1.10"
 
-[dev-dependencies]
+# Dev dependencies
 tempfile = "3.12"
+
+[workspace.lints.rust]
+# Allow unsafe in store module for sqlite extension loading
+# unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+all = "warn"

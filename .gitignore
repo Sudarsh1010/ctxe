@@ -32,8 +32,8 @@ Thumbs.db
 
 
 # Added by cargo
-
 /target
 
-# Planning files (not for repo)
 plan.md
+
+AGENTS.md

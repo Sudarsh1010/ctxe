@@ -1,0 +1,18 @@
+[package]
+name = "ctxe-mcp"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "MCP server binary for ctxe"
+
+[[bin]]
+name = "ctxe-mcp"
+path = "src/main.rs"
+
+[dependencies]
+ctxe = { path = "../ctxe" }
+rmcp = { workspace = true }
+tokio = { workspace = true }
+
+[lints]
+workspace = true

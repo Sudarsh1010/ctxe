@@ -1,0 +1,46 @@
+[package]
+name = "ctxe-indexer"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Code parsing and indexing with tree-sitter"
+
+[dependencies]
+ctxe-core = { path = "../ctxe-core" }
+tree-sitter = { workspace = true }
+tree-sitter-agda = { workspace = true }
+tree-sitter-bash = { workspace = true }
+tree-sitter-c = { workspace = true }
+tree-sitter-cpp = { workspace = true }
+tree-sitter-c-sharp = { workspace = true }
+tree-sitter-css = { workspace = true }
+tree-sitter-embedded-template = { workspace = true }
+tree-sitter-go = { workspace = true }
+tree-sitter-haskell = { workspace = true }
+tree-sitter-html = { workspace = true }
+tree-sitter-java = { workspace = true }
+tree-sitter-javascript = { workspace = true }
+tree-sitter-jsdoc = { workspace = true }
+tree-sitter-json = { workspace = true }
+tree-sitter-julia = { workspace = true }
+tree-sitter-ocaml = { workspace = true }
+tree-sitter-php = { workspace = true }
+tree-sitter-python = { workspace = true }
+tree-sitter-regex = { workspace = true }
+tree-sitter-ruby = { workspace = true }
+tree-sitter-rust = { workspace = true }
+tree-sitter-scala = { workspace = true }
+tree-sitter-typescript = { workspace = true }
+tree-sitter-verilog = { workspace = true }
+ignore = { workspace = true }
+sha2 = { workspace = true }
+hex = { workspace = true }
+rayon = { workspace = true }
+thiserror = { workspace = true }
+serde = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+
+[lints]
+workspace = true
